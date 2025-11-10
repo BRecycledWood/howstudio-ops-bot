@@ -1,4 +1,4 @@
-import App from "@slack/bolt";
+const { App } = require("@slack/bolt");
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -10,7 +10,7 @@ const app = new App({
 });
 
 // Listen to messages
-app.message(async ({ message, say }) => {
+app.message(async ({ message, say }: any) => {
   if (!("text" in message) || !message.text) return;
 
   const text = message.text.toLowerCase();
