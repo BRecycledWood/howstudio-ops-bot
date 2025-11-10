@@ -1,6 +1,6 @@
 const { App } = require("@slack/bolt");
 const express = require("express");
-import dotenv from "dotenv";
+const dotenv = require("dotenv");
 
 dotenv.config();
 
