@@ -1,16 +1,21 @@
 const { App } = require("@slack/bolt");
+const express = require("express");
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const app = new App({
+const expressApp = express();
+const port = process.env.PORT || 3000;
+
+const slackApp = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   socketMode: false,
+  processBeforeResponse: true,
 });
 
 // Listen to messages
-app.message(async ({ message, say }: any) => {
+slackApp.message(async ({ message, say }: any) => {
   if (!("text" in message) || !message.text) return;
 
   const text = message.text.toLowerCase();
@@ -36,15 +41,18 @@ app.message(async ({ message, say }: any) => {
   }
 });
 
-// Start the bot
-async function start() {
-  const port = process.env.PORT || 3000;
-  await app.start(port as number);
+// Slack events endpoint
+expressApp.post("/slack/events", async (req: any, res: any) => {
+  await slackApp.processEvent(req, res);
+});
+
+// Health check
+expressApp.get("/health", (req: any, res: any) => {
+  res.status(200).json({ status: "ok" });
+});
+
+// Start server
+expressApp.listen(port, () => {
   console.log(`⚡️ HowStudio Ops Bot is running on port ${port}`);
   console.log("✅ Bot is ready to receive messages from Slack");
-}
-
-start().catch((error) => {
-  console.error("Failed to start bot:", error);
-  process.exit(1);
 });
